@@ -3,6 +3,9 @@ from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
 from sqlalchemy import create_engine
 from json import dumps
+import random
+
+wygenerowany = random.randrange(1,99999,1)
 
 db_connect = create_engine('sqlite:///fejkowa.db')
 app = Flask(__name__)
@@ -41,7 +44,24 @@ class Tracks(Resource):
         result = {'dane': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
         return jsonify(result)
 
-    
+class lodka1(Resource):
+    def get(self):
+        conn = db_connect.connect()
+        query = conn.execute("SELECT * FROM fejkowa ORDER BY data DESC LIMIT 1;")
+        result = {'dane': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
+        return jsonify(result)
+
+
+class losowo(Resource):
+    def get(self):
+        conn = db_connect.connect()
+        wygenerowany = random.randrange(1,99999,1)
+        query = conn.execute("select data, lat, lon, kompas , napiecie, pochylenie, przechylenie from fejkowa WHERE id= %d " %int(wygenerowany))
+
+        result = {'dane': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
+
+        return jsonify(result)
+
 class Employees_Name(Resource):
     def get(self, employee_id):
         conn = db_connect.connect()
@@ -50,9 +70,12 @@ class Employees_Name(Resource):
         return jsonify(result)
 
 
-api.add_resource(Employees, '/employees') # Route_1
-api.add_resource(Tracks, '/tracks') # Route_2
-api.add_resource(Employees_Name, '/employees/<employee_id>') # Route_3
+
+api.add_resource(losowo, '/losowo') # Losowy wpis
+api.add_resource(Employees, '/id') # wg lodki
+api.add_resource(Tracks, '/wszystko') # wszytsko
+api.add_resource(lodka1, '/lodka1') # ostatni wpis lodki
+api.add_resource(Employees_Name, '/wpis/<employee_id>') # pojedyncze id
 
 
 if __name__ == '__main__':
